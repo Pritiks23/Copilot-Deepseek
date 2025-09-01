@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>DeepSeek Reasoning App</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #1e1e1e;
+      color: #ffffff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2rem;
+    }
+    h1 {
+      color: #00b2ff;
+      margin-bottom: 1rem;
+    }
+    .container {
+      max-width: 600px;
+      width: 100%;
+      background-color: #2d2d2d;
+      padding: 2rem;
+      border-radius: 12px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.5);
+    }
+    input, textarea, button {
+      width: 100%;
+      margin: 0.5rem 0;
+      padding: 0.75rem;
+      border-radius: 8px;
+      border: none;
+      font-size: 1rem;
+    }
+    input, textarea {
+      background-color: #3a3a3a;
+      color: #fff;
+    }
+    button {
+      background-color: #00b2ff;
+      color: #fff;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+    button:hover {
+      background-color: #0090cc;
+    }
+    .response {
+      margin-top: 1rem;
+      background-color: #1a1a1a;
+      padding: 1rem;
+      border-radius: 8px;
+      white-space: pre-wrap;
+    }
+    label {
+      font-weight: bold;
+      margin-top: 1rem;
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <h1>🧠 DeepSeek Reasoning App</h1>
+  <div class="container">
+    <label for="apiKey">Enter Your DeepSeek API Key:</label>
+    <input type="password" id="apiKey" placeholder="sk-..." />
+
+    <label for="prompt">Enter Your Reasoning Prompt:</label>
+    <textarea id="prompt" rows="5" placeholder="Ask a deep question..."></textarea>
+
+    <button onclick="sendPrompt()">Submit</button>
+
+    <div class="response" id="responseBox"></div>
+  </div>
+
+  <script>
+    async function sendPrompt() {
+      const apiKey = document.getElementById('apiKey').value.trim();
+      const prompt = document.getElementById('prompt').value.trim();
+      const responseBox = document.getElementById('responseBox');
+
+      if (!apiKey || !prompt) {
+        responseBox.textContent = "Please enter both your API key and a prompt.";
+        return;
+      }
+
+      responseBox.textContent = "Thinking deeply...";
+
+      try {
+        const res = await fetch("https://api.deepseek.com/v1/chat/completions", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${apiKey}`
+          },
+          body: JSON.stringify({
+            model: "deepseek-chat",
+            messages: [{ role: "user", content: prompt }],
+            temperature: 0.7
+          })
+        });
+
+        const data = await res.json();
+        if (data.choices && data.choices.length > 0) {
+          responseBox.textContent = data.choices[0].message.content;
+        } else {
+          responseBox.textContent = "No response received. Check your API key or prompt.";
+        }
+      } catch (err) {
+        responseBox.textContent = "Error: " + err.message;
+      }
+    }
+  </script>
+</body>
+</html>
